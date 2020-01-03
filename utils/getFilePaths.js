@@ -5,7 +5,7 @@ const postJson = require('./postJson')
 // some filters as options of readdirp
 const options = {
   fileFilter: ['*','!*.iso','!*.zip','!*.tz'],
-  directoryFilter: ['!.git', '!*modules'],
+  directoryFilter: ['!.git', '!*cache'],
   // directoryFilter: (di) => di.basename.length |=== 9
   type: 'files_directories',
   depth: 9

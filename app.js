@@ -1,6 +1,4 @@
 const getFilePaths = require('./utils/getFilePaths')
-const rreaddir = require('./utils/readdir')
-const rreaddirSync = require('./utils/rreaddirSync')
 
 if (process.argv.length <= 2) {
     console.log("Usage: " + __filename + " path/to");
