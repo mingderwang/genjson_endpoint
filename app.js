@@ -11,7 +11,7 @@ var root_path = process.argv[2];
 
 const numbers = [];
 for (var i = 0; i < 10; i++) {
-  numbers.push(i);
+  //numbers.push(i);
 }
 
 const URL = "https://10.99.1.10:9200/_cat/indices";
