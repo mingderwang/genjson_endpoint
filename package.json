@@ -12,8 +12,11 @@
   "dependencies": {
     "babel-preset-env": "^1.7.0",
     "babel-register": "^6.26.0",
+    "base-64": "^0.1.0",
+    "bluebird": "^3.7.2",
     "fs": "^0.0.1-security",
     "fs-promise": "^2.0.3",
+    "isomorphic-fetch": "^2.2.1",
     "path": "^0.12.7",
     "readdirp": "^3.3.0"
   },
