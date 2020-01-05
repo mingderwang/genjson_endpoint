@@ -1,5 +1,6 @@
-const { resolve } = require('path');
-const { readdir } = require('fs-extra').promises;
+const { resolve } = require("path");
+const { readdir } = require("fs-extra").promises;
+const fs = require("fs-extra");
 
 async function* getFiles(dir) {
   const dirents = await readdir(dir, { withFileTypes: true });
@@ -14,7 +15,13 @@ async function* getFiles(dir) {
 }
 
 (async () => {
-  for await (const f of getFiles('/')) {
+  for await (const f of getFiles("/Users/mingderwang/src")) {
     console.log(f);
+    try {
+      fs.copySync(f, "/tmp/testCopyFile");
+      console.log("success!");
+    } catch (err) {
+      console.error(err);
+    }
   }
-})()
+})();
