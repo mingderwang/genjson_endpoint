@@ -10,7 +10,7 @@ async function postJson(filename) {
        console.log("------- directory, return")
     }
 var options = {
-    url: 'https://10.90.118.158:9200/win_index/_doc/?pipeline=attachment',
+    url: 'https://10.99.1.10:9200/win_index/_doc/?pipeline=attachment',
     method: 'POST',
     body: stats,
     json: true,
