@@ -20,19 +20,18 @@ headers.set(
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 async function* getFiles(dir) {
   const stat = await fs.lstat(dir);
-    console.log("isFile:",stat.isFile(), dir);
-    if (stat.isFile()) {
-      yield dir
-    }
-  const dirents = await readdir(dir, { withFileTypes: true });
-  for (const dirent of dirents) {
-    console.log("dir:", dir);
-    console.log("dirent:", dirent);
-    const res = resolve(dir, dirent.name);
-    if (dirent.isDirectory()) {
-      yield* getFiles(res);
-    } else {
-      yield res;
+  console.log("isFile:", stat.isFile(), dir);
+  if (stat.isFile()) {
+    yield dir;
+  } else {
+    const dirents = await readdir(dir, { withFileTypes: true });
+    for (const dirent of dirents) {
+      const res = resolve(dir, dirent.name);
+      if (dirent.isDirectory()) {
+        yield* getFiles(res);
+      } else {
+        yield res;
+      }
     }
   }
 }
@@ -45,28 +44,30 @@ if (isWindows) {
 }
 
 (async () => {
-  for await (const f of getFiles("./utils/test/post.js")) {
+  for await (const f of getFiles("./utils")) {
     console.log(f);
     let stats = fileInfo(f);
-    console.log(stats);
-    console.log("------- fileInfo, return size:", stats.size);
 
     if (stats == null) {
       console.log("------- directory, return");
     }
-    stats["windowsInfo"] = ps1(f);
     try {
       const results = await Promise.map(
-        ["nothing_here"],
-        number =>
+        [stats],
+        member => {
+          console.log(member)
+          ps1(member.file_path).then (console.log)
+          /*
           fetch(URL, {
             method: "post",
-            body: JSON.stringify(stats),
+            body: JSON.stringify(member),
             headers: new Headers({
               "Content-Type": "application/json",
               Authorization: "Basic " + encode(username + ":" + password)
             })
-          }).then(res => console.log(res)),
+          }).then(res => console.log("done-fetch"));
+          */
+        },
         { concurrency: 1 }
       );
 
@@ -85,10 +86,14 @@ const ps1 = filePath => {
         value: filePath
       }
     ]);
-    ps.invoke().then(output => {
-      console.log(output);
-    });
+    let pos = ps.invoke()
+   // .then(output => {
+    //  console.log(output);
+   // }
+    //);
+    return pos;
   } else {
     console.log("---- windows ps1 return: ", filePath);
+    return new Promise()
   }
 };
