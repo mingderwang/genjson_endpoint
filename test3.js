@@ -29,7 +29,7 @@ async function* getFiles(dir) {
 }
 
 (async () => {
-  for await (const f of getFiles("utils")) {
+  for await (const f of getFiles("/Users/mingderwang/src")) {
     console.log(f);
     let stats = fileInfo(f);
     console.log(stats);
