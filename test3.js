@@ -1,4 +1,5 @@
 const { resolve } = require("path");
+var shell = require('node-powershell');
 const { readdir } = require("fs-extra").promises;
 const fs = require("fs-extra");
 const Promise = require("bluebird");
@@ -28,8 +29,15 @@ async function* getFiles(dir) {
   }
 }
 
+
+var ps = new shell({
+    executionPolicy: 'bypass',
+    noProfile: true
+});
+
+
 (async () => {
-  for await (const f of getFiles("/Users/mingderwang/src")) {
+  for await (const f of getFiles("./utils")) {
     console.log(f);
     let stats = fileInfo(f);
     console.log(stats);
@@ -59,3 +67,10 @@ async function* getFiles(dir) {
     }
   }
 })();
+
+ ps.addCommand("./getFileAcl.ps1", [ {
+        name: 'filePath', value: "." 
+    } ])
+    ps.invoke().then(output => {
+        console.log(output)
+    })
