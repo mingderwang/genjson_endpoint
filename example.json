@@ -1,0 +1,33 @@
+{
+    "Owner":  "DESKTOP-UF24HE7\\ttt",
+    "Group":  "DESKTOP-UF24HE7\\None",
+    "AccessToString":  "NT AUTHORITY\\SYSTEM Allow  FullControl\nBUILTIN\\Administrators Allow  Ful
+lControl\nDESKTOP-UF24HE7\\ttt Allow  FullControl",
+    "Access":  [
+                   {
+                       "FileSystemRights":  2032127,
+                       "AccessControlType":  0,
+                       "IdentityReference":  "NT AUTHORITY\\SYSTEM",
+                       "IsInherited":  true,
+                       "InheritanceFlags":  0,
+                       "PropagationFlags":  0
+                   },
+                   {
+                       "FileSystemRights":  2032127,
+                       "AccessControlType":  0,
+                       "IdentityReference":  "BUILTIN\\Administrators",
+                       "IsInherited":  true,
+                       "InheritanceFlags":  0,
+                       "PropagationFlags":  0
+                   },
+                   {
+                       "FileSystemRights":  2032127,
+                       "AccessControlType":  0,
+                       "IdentityReference":  "DESKTOP-UF24HE7\\ttt",
+                       "IsInherited":  true,
+                       "InheritanceFlags":  0,
+                       "PropagationFlags":  0
+                   }
+               ]
+}
+
