@@ -11,7 +11,7 @@ const URL = "https://10.99.1.10:9200/win_index/_doc/?pipeline=attachment";
 const username = "admin";
 const password = "admin";
 
-const isWindows = false;
+const isWindows = true;
 
 let headers = new Headers();
 headers.set(
@@ -45,8 +45,8 @@ if (isWindows) {
 }
 
 (async () => {
-  for await (const f of getFiles("./utils/test")) {
-    console.log(f);
+  for await (const f of getFiles("./utils")) {
+    console.log(f)
     let stats = fileInfo(f);
 
     if (stats == null) {
@@ -57,8 +57,11 @@ if (isWindows) {
         [stats],
         member => {
           console.log(member);
-          ps1(member);
-          /*
+          ps1(member).then(
+		  res => {
+			  member['windowsInfo']=JSON.parse(res)
+	//	  console.log("xxxx ",member)
+          
           fetch(URL, {
             method: "post",
             body: JSON.stringify(member),
@@ -67,7 +70,9 @@ if (isWindows) {
               Authorization: "Basic " + encode(username + ":" + password)
             })
           }).then(res => console.log("done-fetch"));
-          */
+          
+		  }
+	  );
         },
         { concurrency: 1 }
       );
@@ -123,8 +128,9 @@ const ps1 = stats => {
       }
     ]);
     let pos = ps.invoke().then(
-      result => 
-      console.log("ps1 return:", result)
+      result => { 
+	    return result
+      }
     )
     return pos;
   } else {
