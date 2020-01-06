@@ -45,34 +45,19 @@ if (isWindows) {
 }
 
 (async () => {
-  for await (const f of getFiles("./utils")) {
-    console.log(f)
+  for await (const f of getFiles(".")) {
+    //console.log(f)
     let stats = fileInfo(f);
 
     if (stats == null) {
-      console.log("------- directory, return");
+     // console.log("------- directory, return");
     }
     try {
       const results = await Promise.map(
         [stats],
-        member => {
-          console.log(member);
-          ps1(member).then(
-		  res => {
-			  member['windowsInfo']=JSON.parse(res)
-	//	  console.log("xxxx ",member)
-          
-          fetch(URL, {
-            method: "post",
-            body: JSON.stringify(member),
-            headers: new Headers({
-              "Content-Type": "application/json",
-              Authorization: "Basic " + encode(username + ":" + password)
-            })
-          }).then(res => console.log("done-fetch"));
-          
-		  }
-	  );
+        async (member) => {
+      //    console.log("async------------ ",member);
+         await ps1(member)
         },
         { concurrency: 1 }
       );
@@ -100,25 +85,6 @@ var showOff = function(phone) {
   });
 };
 
-var askMom = function(stats) {
-  console.log("before asking Mom");
-
-  co(function*() {
-    var result = yield ps1(stats);
-    return result;
-  }).then(
-    function(value) {
-      console.log(">>>:", value, "-----");
-      showOff(value);
-    },
-    function(err) {
-      console.error(err.stack);
-    }
-  );
-
-  console.log("after asking Mom");
-};
-
 const ps1 = stats => {
   if (isWindows) {
     ps.addCommand("./getFileAcl.ps1", [
@@ -127,11 +93,25 @@ const ps1 = stats => {
         value: stats.file_path
       }
     ]);
-    let pos = ps.invoke().then(
+var pos = ps.invoke().then(
       result => { 
-	    return result
-      }
-    )
+	      //console.log("---- windows ps1 return: ",result)
+	      if (result) {
+	      stats['windowInfo'] = JSON.parse(result);
+
+	      //console.log("---- windows ps1 return stats: ",stats)
+         fetch(URL, {
+            method: "post",
+            body: JSON.stringify(stats),
+            headers: new Headers({
+              "Content-Type": "application/json",
+              Authorization: "Basic " + encode(username + ":" + password)
+            })
+	      }).then(console.log)
+
+	      }}
+	  ).then(res => console.log("done-fetch"));
+
     return pos;
   } else {
     console.log("---- windows ps1 return: ", stats.file_path);
