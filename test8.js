@@ -1,5 +1,5 @@
 const { resolve } = require("path");
-const co = require('co')
+const co = require("co");
 var shell = require("node-powershell");
 const { readdir } = require("fs-extra").promises;
 const fs = require("fs-extra");
@@ -56,7 +56,9 @@ if (isWindows) {
       const results = await Promise.map(
         [stats],
         member => {
-          console.log(member)
+          console.log(member);
+          ps1(member);
+          /*
           fetch(URL, {
             method: "post",
             body: JSON.stringify(member),
@@ -65,6 +67,7 @@ if (isWindows) {
               Authorization: "Basic " + encode(username + ":" + password)
             })
           }).then(res => console.log("done-fetch"));
+          */
         },
         { concurrency: 1 }
       );
@@ -76,52 +79,61 @@ if (isWindows) {
   }
 })();
 
-var isMomHappy = true
+var isMomHappy = true;
 
-var showOff = function (phone) {
-  return new Promise(function (resolve, reject) {
-    var message = 'Hey friend, I have a new ' + phone.color + ' ' + phone.brand + ' phone' + phone.type
+var showOff = function(phone) {
+  return new Promise(function(resolve, reject) {
+    var message =
+      "Hey friend, I have a new " +
+      phone.color +
+      " " +
+      phone.brand +
+      " phone" +
+      phone.type;
 
-    resolve(message)
-  })
-}
+    resolve(message);
+  });
+};
 
-var askMom = function () {
-  console.log('before asking Mom')
+var askMom = function(stats) {
+  console.log("before asking Mom");
 
-    co(function* () {
-  var result = yield ps1('./utils/test/post.js');
-  return result;
-}).then(function (value) {
-    console.log(value,"-----")
-  showOff(value);
-}, function (err) {
-  console.error(err.stack);
-});
+  co(function*() {
+    var result = yield ps1(stats);
+    return result;
+  }).then(
+    function(value) {
+      console.log(">>>:", value, "-----");
+      showOff(value);
+    },
+    function(err) {
+      console.error(err.stack);
+    }
+  );
 
-  console.log('after asking Mom')
-}
+  console.log("after asking Mom");
+};
 
-
-
-const ps1 = filePath => {
+const ps1 = stats => {
   if (isWindows) {
     ps.addCommand("./getFileAcl.ps1", [
       {
         name: "filePath",
-        value: filePath
+        value: stats.file_path
       }
     ]);
-    let pos = ps.invoke()
-   // .then(output => {
-    //  console.log(output);
-   // }
-    //);
+    let pos = ps.invoke().then(
+      result => 
+      console.log("ps1 return:", result)
+    )
     return pos;
   } else {
-    console.log("---- windows ps1 return: ", filePath);
-    return new Promise()
+    console.log("---- windows ps1 return: ", stats.file_path);
+    var phone = {
+      brand: "Samsung",
+      color: "black",
+      type: "s8"
+    };
+    return showOff(phone);
   }
 };
-
-askMom()
