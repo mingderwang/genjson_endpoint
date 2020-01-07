@@ -108,9 +108,7 @@ const ps1 = stats => {
         value: stats.file_path
       }
     ])
-    .then(function(){
-      return ps.invoke();
-  })
+    return ps.invoke()
   .then(function(output){
       console.log(output);
       ps.dispose();

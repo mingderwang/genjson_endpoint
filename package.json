@@ -2,13 +2,13 @@
   "name": "genjson_endpoint",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "test8.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Ming-der Wang",
   "license": "ISC",
-  "bin": "index.js",
+  "bin": "test8.js",
   "dependencies": {
     "babel-preset-env": "^1.7.0",
     "babel-register": "^6.26.0",
@@ -35,7 +35,7 @@
       "views/**/*"
     ],
     "targets": [
-      "node8"
+      "latest"
     ]
   }
 }
