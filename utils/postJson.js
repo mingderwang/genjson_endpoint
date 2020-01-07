@@ -3,7 +3,7 @@ const fileInfo = require('./fileAttributes');
 
 async function postJson(filename) {
     console.log("------- filename, is:", filename)
-    var stats = fileInfo(filename.fullPath)
+    var stats = fileInfo(filename); // for old , filename.fullPath
     console.log("------- fileInfo, return size:", stats.size)
 
     if (stats == null) {

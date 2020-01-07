@@ -1,4 +1,5 @@
 const { resolve } = require("path");
+const postJson = require('./utils/postJson')
 const co = require("co");
 var shell = require("node-powershell");
 const { readdir } = require("fs-extra").promises;
@@ -33,7 +34,6 @@ async function* getFiles(dir) {
   const stat = await fs.lstat(dir);
   console.log("isFile:", stat.isFile(), dir);
   if (stat.isFile()) {
-    delay(3000).then(() => {});
     yield res;
   } else {
     const dirents = await readdir(dir, { withFileTypes: true });
@@ -42,7 +42,6 @@ async function* getFiles(dir) {
       if (dirent.isDirectory()) {
         yield* getFiles(res);
       } else {
-        delay(3000).then(() => {});
         yield res;
       }
     }
@@ -66,17 +65,8 @@ async function* getFiles(dir) {
             var a = ps1(member);
             var res = yield a;
             console.log(count, "<=total, after yield a res:", res.file_path);
-            var c = fetch(URL, {
-              method: "post",
-              body: JSON.stringify(res),
-              headers: new Headers({
-                "Content-Type": "application/json",
-                Authorization: "Basic " + encode(username + ":" + password)
-              })
+              postJson(res.file_path)
             });
-            var res2 = yield c;
-            //console.log("fetch return:",res2);
-          });
         },
         { concurrency: 1 }
       );
@@ -164,7 +154,4 @@ function onerror(err) {
   // co will not throw any errors you do not handle!!!
   // HANDLE ALL YOUR ERRORS!!!
   console.error(err.stack);
-}
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }
