@@ -45,7 +45,7 @@ if (isWindows) {
 }
 
 (async () => {
-  for await (const f of getFiles("./utils")) {
+  for await (const f of getFiles("./utils/test")) {
     //console.log(f)
     let stats = fileInfo(f);
 
@@ -60,14 +60,14 @@ if (isWindows) {
             // resolve multiple promises in parallel
             var a = ps1(member);
             var res = yield a;
-		 console.log("1:", res);
+//		 console.log(res);
 		  var accessJson = JSON.parse(res)
             console.log("1JSON:", accessJson);
 		  member['uid']=accessJson.Owner
 		  member['gid']=accessJson.Group
 		  member['access']=accessJson.AccessToString
 		  member['windowsInfo']=accessJson
-          console.log(member);
+         console.log("1:",member);
             var c = fetch(URL, {
               method: "post",
               body: JSON.stringify(member),
@@ -102,24 +102,27 @@ var showOff = function(phone) {
       " phone" +
       phone.type;
 
-    resolve(message);
+    resolve(JSON.stringify(phone));
   });
 };
 
 const ps1 = stats => {
   if (isWindows) {
+//	  console.log("===== file path ====",stats.file_path)
     ps.addCommand("./getFileAcl.ps1", [
       {
         name: "filePath",
         value: stats.file_path
       }
     ])
-    return ps.invoke()
-  .then(function(output){
-      console.log(output);
-      ps.dispose();
-      return output
-  })
+    return ps.invoke().then(
+	    function(res) {
+//		    console.log("======= invoke.then =====",res)
+		    ps.dispose();
+		    console.log("======= ps.dispose =====",res)
+		    return res
+	    }
+    )
   .catch(function(err){
       console.log(err);
       ps.dispose();
@@ -127,9 +130,9 @@ const ps1 = stats => {
   } else {
     console.log("---- windows ps1 return: ", stats.file_path);
     var phone = {
-      brand: "Samsung",
-      color: "black",
-      type: "s8"
+	    Owner:"ming",
+	    Group:"rd",
+	    AccessToString:"me"
     };
     return showOff(phone);
   }
