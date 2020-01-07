@@ -9,12 +9,12 @@ const fetch = require("isomorphic-fetch");
 const fileInfo = require("./utils/fileAttributes");
 const URL = "https://10.99.1.10:9200/win_index/_doc/?pipeline=attachment";
 if (elk_url) {
-  URL = elk_url + "/win_index/_doc/?pipeline=attachment"
+  URL = elk_url + "/win_index/_doc/?pipeline=attachment";
 }
 const username = "admin";
 const password = "admin";
-var count =0
-const isWindows = true;
+var count = 0;
+const isWindows = false;
 
 if (process.argv.length <= 3) {
   console.log("Usage: " + __filename + " path/toScan https://xxxx:9200");
@@ -22,7 +22,6 @@ if (process.argv.length <= 3) {
 }
 var root_path = process.argv[2];
 var elk_url = process.argv[3];
-
 
 let headers = new Headers();
 headers.set(
@@ -34,7 +33,8 @@ async function* getFiles(dir) {
   const stat = await fs.lstat(dir);
   console.log("isFile:", stat.isFile(), dir);
   if (stat.isFile()) {
-    yield dir;
+    delay(3000).then(() => {});
+    yield res;
   } else {
     const dirents = await readdir(dir, { withFileTypes: true });
     for (const dirent of dirents) {
@@ -42,12 +42,12 @@ async function* getFiles(dir) {
       if (dirent.isDirectory()) {
         yield* getFiles(res);
       } else {
+        delay(3000).then(() => {});
         yield res;
       }
     }
   }
 }
-
 
 (async () => {
   for await (const f of getFiles(root_path)) {
@@ -55,7 +55,7 @@ async function* getFiles(dir) {
     let stats = fileInfo(f);
 
     if (stats == null) {
-     // console.log("------- directory, return");
+      // console.log("------- directory, return");
     }
     try {
       const results = await Promise.map(
@@ -65,7 +65,7 @@ async function* getFiles(dir) {
             // resolve multiple promises in parallel
             var a = ps1(member);
             var res = yield a;
-		  console.log(count,"<=total, after yield a res:",res.file_path)
+            console.log(count, "<=total, after yield a res:", res.file_path);
             var c = fetch(URL, {
               method: "post",
               body: JSON.stringify(res),
@@ -81,7 +81,7 @@ async function* getFiles(dir) {
         { concurrency: 1 }
       );
 
-      console.log("success!",count++);
+      console.log("success!", count++);
     } catch (err) {
       console.error(err);
     }
@@ -105,47 +105,46 @@ var showOff = function(phone) {
 };
 
 const ps1 = stats => {
-
   if (isWindows) {
-  var ps = new shell({
-    executionPolicy: "bypass",
-    noProfile: true
-  });
-	  console.log("===== ps1 file path ====",stats.file_path)
+    var ps = new shell({
+      executionPolicy: "bypass",
+      noProfile: true
+    });
+    console.log("===== ps1 file path ====", stats.file_path);
     ps.addCommand("./getFileAcl.ps1", [
       {
         name: "filePath",
         value: stats.file_path
       }
-    ])
-    return ps.invoke().then(
-	    function(res) {
-		  //  console.log("=start====== invoke.then =====",res)
-		  //  console.log("=end====== invoke.then =====")
-		  
-		  var accessJson = JSON.parse(res)
-           // console.log("1JSON:", accessJson);
-		  stats['uid']=accessJson.Owner
-		  stats['gid']=accessJson.Group
-		  stats['access']=accessJson.AccessToString
-		  stats['windowsInfo']=accessJson
-		  
-       //  console.log("1:",stats);
-		    ps.dispose();
-	//	    console.log("======= ps.dispose =====")
-		    return stats
-	    }
-    )
-  .catch(function(err){
-      console.log(err);
-      ps.dispose();
-  });
+    ]);
+    return ps
+      .invoke()
+      .then(function(res) {
+        //  console.log("=start====== invoke.then =====",res)
+        //  console.log("=end====== invoke.then =====")
+
+        var accessJson = JSON.parse(res);
+        // console.log("1JSON:", accessJson);
+        stats["uid"] = accessJson.Owner;
+        stats["gid"] = accessJson.Group;
+        stats["access"] = accessJson.AccessToString;
+        stats["windowsInfo"] = accessJson;
+
+        //  console.log("1:",stats);
+        ps.dispose();
+        //	    console.log("======= ps.dispose =====")
+        return stats;
+      })
+      .catch(function(err) {
+        console.log(err);
+        ps.dispose();
+      });
   } else {
     console.log("---- windows ps1 return: ", stats.file_path);
     var phone = {
-	    Owner:"ming",
-	    Group:"rd",
-	    AccessToString:"me"
+      Owner: "ming",
+      Group: "rd",
+      AccessToString: "me"
     };
     return showOff(phone);
   }
@@ -165,4 +164,7 @@ function onerror(err) {
   // co will not throw any errors you do not handle!!!
   // HANDLE ALL YOUR ERRORS!!!
   console.error(err.stack);
+}
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
