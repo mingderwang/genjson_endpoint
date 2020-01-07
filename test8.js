@@ -15,7 +15,7 @@ if (elk_url) {
 const username = "admin";
 const password = "admin";
 var count = 0;
-const isWindows = false;
+const isWindows = true;
 
 if (process.argv.length <= 3) {
   console.log("Usage: " + __filename + " path/toScan https://xxxx:9200");
@@ -32,7 +32,9 @@ headers.set(
 );
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 async function* getFiles(dir) {
-  while (!lock.isBusy()) {
+  while (lock.isBusy()) {
+      console.log("locked")
+  }
     const stat = await fs.lstat(dir);
     console.log("isFile:", stat.isFile(), dir);
     if (stat.isFile()) {
@@ -48,7 +50,6 @@ async function* getFiles(dir) {
         }
       }
     }
-  }
 }
 
 (async () => {
@@ -67,7 +68,7 @@ async function* getFiles(dir) {
             // resolve multiple promises in parallel
             var a = ps1(member);
             var res = yield a;
-            console.log(count, "<=total, after yield a res:", res.file_path);
+            console.log(count, "<=total, after yield a res:", res);
             // Promise mode
             lock
               .acquire("key", () => {
