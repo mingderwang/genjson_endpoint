@@ -45,7 +45,7 @@ if (isWindows) {
 }
 
 (async () => {
-  for await (const f of getFiles("./utils/test")) {
+  for await (const f of getFiles("./utils")) {
     //console.log(f)
     let stats = fileInfo(f);
 
@@ -56,12 +56,18 @@ if (isWindows) {
       const results = await Promise.map(
         [stats],
         member => {
-          console.log(member);
           co(function*() {
             // resolve multiple promises in parallel
             var a = ps1(member);
             var res = yield a;
-            console.log("1:", res);
+		 console.log("1:", res);
+		  var accessJson = JSON.parse(res)
+            console.log("1JSON:", accessJson);
+		  member['uid']=accessJson.Owner
+		  member['gid']=accessJson.Group
+		  member['access']=accessJson.AccessToString
+		  member['windowsInfo']=accessJson
+          console.log(member);
             var c = fetch(URL, {
               method: "post",
               body: JSON.stringify(member),
