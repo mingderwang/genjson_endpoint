@@ -17,10 +17,7 @@ const password = "admin";
 var count = 0;
 const isWindows = true;
 const s = new Sema(
-  1, // Allow 1 concurrent async calls
-  {
-    capacity: 100 // Prealloc space for 100 tokens
-  }
+  1 // Allow 1 concurrent async calls
 );
 
 if (process.argv.length <= 3) {
@@ -37,7 +34,9 @@ headers.set(
 );
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 async function* getFiles(dir) {
+    console.log("s.nr:",s.nrWaiting())
   await s.acquire()
+    console.log("s.nr:",s.nrWaiting())
   const stat = await fs.lstat(dir);
   console.log("isFile:", stat.isFile(), dir);
   if (stat.isFile()) {
@@ -49,6 +48,9 @@ async function* getFiles(dir) {
       if (dirent.isDirectory()) {
         yield* getFiles(res);
       } else {
+    console.log("s.nr:",s.nrWaiting())
+  await s.acquire()
+    console.log("s.nr:",s.nrWaiting())
         yield res;
       }
     }
@@ -185,4 +187,4 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-s.release();
+s.release()
