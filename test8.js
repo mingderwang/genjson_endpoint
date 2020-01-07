@@ -1,5 +1,4 @@
 const { resolve } = require("path");
-const postJson = require('./utils/postJson')
 const co = require("co");
 var shell = require("node-powershell");
 const { readdir } = require("fs-extra").promises;
@@ -15,7 +14,7 @@ if (elk_url) {
 const username = "admin";
 const password = "admin";
 var count = 0;
-const isWindows = false;
+const isWindows = true;
 
 if (process.argv.length <= 3) {
   console.log("Usage: " + __filename + " path/toScan https://xxxx:9200");
@@ -65,7 +64,16 @@ async function* getFiles(dir) {
             var a = ps1(member);
             var res = yield a;
             console.log(count, "<=total, after yield a res:", res.file_path);
-              postJson(res.file_path)
+		  var c = fetch(URL, {
+              method: "post",
+              body: JSON.stringify(res),
+              headers: new Headers({
+                "Content-Type": "application/json",
+                Authorization: "Basic " + encode(username + ":" + password)
+              })
+            });
+            var res2 = yield c;
+            //console.log("fetch return:",res2);
             });
         },
         { concurrency: 1 }
