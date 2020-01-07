@@ -11,7 +11,7 @@ const URL = "https://10.99.1.10:9200/win_index/_doc/?pipeline=attachment";
 const username = "admin";
 const password = "admin";
 
-const isWindows = true;
+const isWindows = ture;
 
 let headers = new Headers();
 headers.set(
@@ -45,7 +45,7 @@ if (isWindows) {
 }
 
 (async () => {
-  for await (const f of getFiles(".")) {
+  for await (const f of getFiles("./utils/test")) {
     //console.log(f)
     let stats = fileInfo(f);
 
@@ -107,9 +107,19 @@ const ps1 = stats => {
         name: "filePath",
         value: stats.file_path
       }
-    ]);
-    let pos = ps.invoke().then(result => console.log("ps1 return:", result));
-    return pos;
+    ])
+    .then(function(){
+      return ps.invoke();
+  })
+  .then(function(output){
+      console.log(output);
+      ps.dispose();
+      return output
+  })
+  .catch(function(err){
+      console.log(err);
+      ps.dispose();
+  });
   } else {
     console.log("---- windows ps1 return: ", stats.file_path);
     var phone = {
