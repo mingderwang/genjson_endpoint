@@ -11,7 +11,7 @@ const URL = "https://10.99.1.10:9200/win_index/_doc/?pipeline=attachment";
 const username = "admin";
 const password = "admin";
 
-const isWindows = ture;
+const isWindows = true;
 
 let headers = new Headers();
 headers.set(
