@@ -1,5 +1,5 @@
 const { resolve } = require("path");
-var AsyncLock = require("async-lock");
+const { Sema } = require('async-sema');
 const co = require("co");
 var shell = require("node-powershell");
 const { readdir } = require("fs-extra").promises;
@@ -16,6 +16,12 @@ const username = "admin";
 const password = "admin";
 var count = 0;
 const isWindows = true;
+const s = new Sema(
+  1, // Allow 1 concurrent async calls
+  {
+    capacity: 100 // Prealloc space for 100 tokens
+  }
+);
 
 if (process.argv.length <= 3) {
   console.log("Usage: " + __filename + " path/toScan https://xxxx:9200");
@@ -23,7 +29,6 @@ if (process.argv.length <= 3) {
 }
 var root_path = process.argv[2];
 var elk_url = process.argv[3];
-var lock = new AsyncLock({timeout:100000, maxPending: 1});
 
 let headers = new Headers();
 headers.set(
@@ -32,26 +37,22 @@ headers.set(
 );
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 async function* getFiles(dir) {
-  while (lock.isBusy()) {
-	  delay(3000).then(() => 
-      console.log("locked")
-	  );
-  }
-    const stat = await fs.lstat(dir);
-    console.log("isFile:", stat.isFile(), dir);
-    if (stat.isFile()) {
-      yield res;
-    } else {
-      const dirents = await readdir(dir, { withFileTypes: true });
-      for (const dirent of dirents) {
-        const res = resolve(dir, dirent.name);
-        if (dirent.isDirectory()) {
-          yield* getFiles(res);
-        } else {
-          yield res;
-        }
+  await s.acquire()
+  const stat = await fs.lstat(dir);
+  console.log("isFile:", stat.isFile(), dir);
+  if (stat.isFile()) {
+    yield res;
+  } else {
+    const dirents = await readdir(dir, { withFileTypes: true });
+    for (const dirent of dirents) {
+      const res = resolve(dir, dirent.name);
+      if (dirent.isDirectory()) {
+        yield* getFiles(res);
+      } else {
+        yield res;
       }
     }
+  }
 }
 
 (async () => {
@@ -72,21 +73,16 @@ async function* getFiles(dir) {
             var res = yield a;
             console.log(count, "<=total, after yield a res:", res);
             // Promise mode
-            lock
-              .acquire("key", () => {
-                fetch(URL, {
-                  method: "post",
-                  body: JSON.stringify(res),
-                  headers: new Headers({
-                    "Content-Type": "application/json",
-                    Authorization: "Basic " + encode(username + ":" + password)
-                  })
-                });
-              },
-              function() {
-                console.log("lock released");
-                // lock released
-              });
+            fetch(URL, {
+              method: "post",
+              body: JSON.stringify(res),
+              headers: new Headers({
+                "Content-Type": "application/json",
+                Authorization: "Basic " + encode(username + ":" + password)
+              })
+            }).then(() => {
+              s.release();
+            });
           });
         },
         { concurrency: 1 }
@@ -181,3 +177,4 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+s.release();
