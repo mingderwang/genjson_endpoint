@@ -57,17 +57,22 @@ if (isWindows) {
         [stats],
         member => {
           console.log(member);
-          ps1(member);
-          /*
-          fetch(URL, {
-            method: "post",
-            body: JSON.stringify(member),
-            headers: new Headers({
-              "Content-Type": "application/json",
-              Authorization: "Basic " + encode(username + ":" + password)
-            })
-          }).then(res => console.log("done-fetch"));
-          */
+          co(function*() {
+            // resolve multiple promises in parallel
+            var a = ps1(member);
+            var res = yield a;
+            console.log("1:", res);
+            var c = fetch(URL, {
+              method: "post",
+              body: JSON.stringify(member),
+              headers: new Headers({
+                "Content-Type": "application/json",
+                Authorization: "Basic " + encode(username + ":" + password)
+              })
+            });
+            var res2 = yield c;
+            console.log("2:", res2);
+          });
         },
         { concurrency: 1 }
       );
@@ -122,10 +127,7 @@ const ps1 = stats => {
         value: stats.file_path
       }
     ]);
-    let pos = ps.invoke().then(
-      result => 
-      console.log("ps1 return:", result)
-    )
+    let pos = ps.invoke().then(result => console.log("ps1 return:", result));
     return pos;
   } else {
     console.log("---- windows ps1 return: ", stats.file_path);
@@ -137,3 +139,19 @@ const ps1 = stats => {
     return showOff(phone);
   }
 };
+
+// errors can be try/catched
+co(function*() {
+  try {
+    yield Promise.reject(new Error("boom"));
+  } catch (err) {
+    console.error(err.message); // "boom"
+  }
+}).catch(onerror);
+
+function onerror(err) {
+  // log any uncaught errors
+  // co will not throw any errors you do not handle!!!
+  // HANDLE ALL YOUR ERRORS!!!
+  console.error(err.stack);
+}
