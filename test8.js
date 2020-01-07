@@ -72,7 +72,7 @@ async function* getFiles(dir) {
             // Promise mode
             lock
               .acquire("key", () => {
-                return fetch(URL, {
+                fetch(URL, {
                   method: "post",
                   body: JSON.stringify(res),
                   headers: new Headers({
@@ -80,8 +80,8 @@ async function* getFiles(dir) {
                     Authorization: "Basic " + encode(username + ":" + password)
                   })
                 });
-              })
-              .then(function() {
+              },
+              function() {
                 console.log("lock released");
                 // lock released
               });
