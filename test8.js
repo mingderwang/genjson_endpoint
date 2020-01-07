@@ -23,7 +23,7 @@ if (process.argv.length <= 3) {
 }
 var root_path = process.argv[2];
 var elk_url = process.argv[3];
-var lock = new AsyncLock();
+var lock = new AsyncLock({timeout:100000, maxPending: 1});
 
 let headers = new Headers();
 headers.set(
@@ -33,7 +33,9 @@ headers.set(
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 async function* getFiles(dir) {
   while (lock.isBusy()) {
+	  delay(3000).then(() => 
       console.log("locked")
+	  );
   }
     const stat = await fs.lstat(dir);
     console.log("isFile:", stat.isFile(), dir);
@@ -174,3 +176,8 @@ function onerror(err) {
   // HANDLE ALL YOUR ERRORS!!!
   console.error(err.stack);
 }
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
