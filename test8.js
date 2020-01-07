@@ -8,10 +8,21 @@ const encode = require("base-64").encode;
 const fetch = require("isomorphic-fetch");
 const fileInfo = require("./utils/fileAttributes");
 const URL = "https://10.99.1.10:9200/win_index/_doc/?pipeline=attachment";
+if (elk_url) {
+  URL = elk_url + "/win_index/_doc/?pipeline=attachment"
+}
 const username = "admin";
 const password = "admin";
 var count =0
 const isWindows = true;
+
+if (process.argv.length <= 3) {
+  console.log("Usage: " + __filename + " path/toScan https://xxxx:9200");
+  process.exit(-1);
+}
+var root_path = process.argv[2];
+var elk_url = process.argv[3];
+
 
 let headers = new Headers();
 headers.set(
@@ -39,7 +50,7 @@ async function* getFiles(dir) {
 
 
 (async () => {
-  for await (const f of getFiles("./utils/")) {
+  for await (const f of getFiles(root_path)) {
     //console.log(f)
     let stats = fileInfo(f);
 
