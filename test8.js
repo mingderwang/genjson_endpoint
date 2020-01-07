@@ -34,23 +34,22 @@ headers.set(
 );
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 async function* getFiles(dir) {
-    console.log("s.nr:",s.nrWaiting())
+	console.log("---->",dir)
   await s.acquire()
-    console.log("s.nr:",s.nrWaiting())
   const stat = await fs.lstat(dir);
   console.log("isFile:", stat.isFile(), dir);
   if (stat.isFile()) {
-    yield res;
+  await s.acquire()
+    yield dir;
   } else {
     const dirents = await readdir(dir, { withFileTypes: true });
     for (const dirent of dirents) {
       const res = resolve(dir, dirent.name);
       if (dirent.isDirectory()) {
+	      s.release()
         yield* getFiles(res);
       } else {
-    console.log("s.nr:",s.nrWaiting())
   await s.acquire()
-    console.log("s.nr:",s.nrWaiting())
         yield res;
       }
     }
@@ -73,7 +72,7 @@ async function* getFiles(dir) {
             // resolve multiple promises in parallel
             var a = ps1(member);
             var res = yield a;
-            console.log(count, "<=total, after yield a res:", res);
+            console.log(count, "<=total, after yield a res:", res.file_path);
             // Promise mode
             var c = fetch(URL, {
               method: "post",
@@ -86,13 +85,13 @@ async function* getFiles(dir) {
     return response.json();
   })
   .then(function(myJson) {
-    console.log(myJson);
+    //console.log(myJson);
   }).then(() => {
 	  console.log("------------------------ s.release")
               s.release();
             });
-		var ii = yield c;
-            console.log(count, "<=total, after yield a ii:", ii);
+		  var ii = yield c;
+
           });
         },
         { concurrency: 1 }
