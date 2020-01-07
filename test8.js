@@ -1,4 +1,5 @@
 const { resolve } = require("path");
+var AsyncLock = require("async-lock");
 const co = require("co");
 var shell = require("node-powershell");
 const { readdir } = require("fs-extra").promises;
@@ -14,7 +15,7 @@ if (elk_url) {
 const username = "admin";
 const password = "admin";
 var count = 0;
-const isWindows = true;
+const isWindows = false;
 
 if (process.argv.length <= 3) {
   console.log("Usage: " + __filename + " path/toScan https://xxxx:9200");
@@ -22,6 +23,7 @@ if (process.argv.length <= 3) {
 }
 var root_path = process.argv[2];
 var elk_url = process.argv[3];
+var lock = new AsyncLock();
 
 let headers = new Headers();
 headers.set(
@@ -30,18 +32,20 @@ headers.set(
 );
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 async function* getFiles(dir) {
-  const stat = await fs.lstat(dir);
-  console.log("isFile:", stat.isFile(), dir);
-  if (stat.isFile()) {
-    yield res;
-  } else {
-    const dirents = await readdir(dir, { withFileTypes: true });
-    for (const dirent of dirents) {
-      const res = resolve(dir, dirent.name);
-      if (dirent.isDirectory()) {
-        yield* getFiles(res);
-      } else {
-        yield res;
+  while (!lock.isBusy()) {
+    const stat = await fs.lstat(dir);
+    console.log("isFile:", stat.isFile(), dir);
+    if (stat.isFile()) {
+      yield res;
+    } else {
+      const dirents = await readdir(dir, { withFileTypes: true });
+      for (const dirent of dirents) {
+        const res = resolve(dir, dirent.name);
+        if (dirent.isDirectory()) {
+          yield* getFiles(res);
+        } else {
+          yield res;
+        }
       }
     }
   }
@@ -64,17 +68,23 @@ async function* getFiles(dir) {
             var a = ps1(member);
             var res = yield a;
             console.log(count, "<=total, after yield a res:", res.file_path);
-		  var c = fetch(URL, {
-              method: "post",
-              body: JSON.stringify(res),
-              headers: new Headers({
-                "Content-Type": "application/json",
-                Authorization: "Basic " + encode(username + ":" + password)
+            // Promise mode
+            lock
+              .acquire("key", () => {
+                return fetch(URL, {
+                  method: "post",
+                  body: JSON.stringify(res),
+                  headers: new Headers({
+                    "Content-Type": "application/json",
+                    Authorization: "Basic " + encode(username + ":" + password)
+                  })
+                });
               })
-            });
-            var res2 = yield c;
-            //console.log("fetch return:",res2);
-            });
+              .then(function() {
+                console.log("lock released");
+                // lock released
+              });
+          });
         },
         { concurrency: 1 }
       );
