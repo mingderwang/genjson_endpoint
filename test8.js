@@ -54,7 +54,7 @@ async function* getFiles(dir) {
             // resolve multiple promises in parallel
             var a = ps1(member);
             var res = yield a;
-		  console.log("after yield a res:",res.file_path)
+		  console.log(count,"<=total, after yield a res:",res.file_path)
             var c = fetch(URL, {
               method: "post",
               body: JSON.stringify(res),
@@ -64,7 +64,7 @@ async function* getFiles(dir) {
               })
             });
             var res2 = yield c;
-            //console.log("2:", res2);
+            //console.log("fetch return:",res2);
           });
         },
         { concurrency: 1 }
