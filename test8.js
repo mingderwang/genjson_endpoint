@@ -11,7 +11,7 @@ const URL = "https://10.99.1.10:9200/win_index/_doc/?pipeline=attachment";
 const username = "admin";
 const password = "admin";
 
-const isWindows = false;
+const isWindows = true;
 
 let headers = new Headers();
 headers.set(
@@ -45,12 +45,12 @@ if (isWindows) {
 }
 
 (async () => {
-  for await (const f of getFiles("./utils/test")) {
-    console.log(f);
+  for await (const f of getFiles(".")) {
+    //console.log(f)
     let stats = fileInfo(f);
 
     if (stats == null) {
-      console.log("------- directory, return");
+     // console.log("------- directory, return");
     }
     try {
       const results = await Promise.map(
@@ -98,25 +98,6 @@ var showOff = function(phone) {
 
     resolve(message);
   });
-};
-
-var askMom = function(stats) {
-  console.log("before asking Mom");
-
-  co(function*() {
-    var result = yield ps1(stats);
-    return result;
-  }).then(
-    function(value) {
-      console.log(">>>:", value, "-----");
-      showOff(value);
-    },
-    function(err) {
-      console.error(err.stack);
-    }
-  );
-
-  console.log("after asking Mom");
 };
 
 const ps1 = stats => {
