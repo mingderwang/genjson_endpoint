@@ -73,16 +73,24 @@ async function* getFiles(dir) {
             var res = yield a;
             console.log(count, "<=total, after yield a res:", res);
             // Promise mode
-            fetch(URL, {
+            var c = fetch(URL, {
               method: "post",
               body: JSON.stringify(res),
               headers: new Headers({
                 "Content-Type": "application/json",
                 Authorization: "Basic " + encode(username + ":" + password)
               })
-            }).then(() => {
+            }).then(function(response) {
+    return response.json();
+  })
+  .then(function(myJson) {
+    console.log(myJson);
+  }).then(() => {
+	  console.log("------------------------ s.release")
               s.release();
             });
+		var ii = yield c;
+            console.log(count, "<=total, after yield a ii:", ii);
           });
         },
         { concurrency: 1 }
