@@ -10,7 +10,7 @@ const fileInfo = require("./utils/fileAttributes");
 const URL = "https://10.99.1.10:9200/win_index/_doc/?pipeline=attachment";
 const username = "admin";
 const password = "admin";
-
+var count =0
 const isWindows = true;
 
 let headers = new Headers();
@@ -37,15 +37,9 @@ async function* getFiles(dir) {
   }
 }
 
-if (isWindows) {
-  var ps = new shell({
-    executionPolicy: "bypass",
-    noProfile: true
-  });
-}
 
 (async () => {
-  for await (const f of getFiles("./utils/test")) {
+  for await (const f of getFiles("./utils/")) {
     //console.log(f)
     let stats = fileInfo(f);
 
@@ -60,30 +54,23 @@ if (isWindows) {
             // resolve multiple promises in parallel
             var a = ps1(member);
             var res = yield a;
-//		 console.log(res);
-		  var accessJson = JSON.parse(res)
-            console.log("1JSON:", accessJson);
-		  member['uid']=accessJson.Owner
-		  member['gid']=accessJson.Group
-		  member['access']=accessJson.AccessToString
-		  member['windowsInfo']=accessJson
-         console.log("1:",member);
+		  console.log("after yield a res:",res.file_path)
             var c = fetch(URL, {
               method: "post",
-              body: JSON.stringify(member),
+              body: JSON.stringify(res),
               headers: new Headers({
                 "Content-Type": "application/json",
                 Authorization: "Basic " + encode(username + ":" + password)
               })
             });
             var res2 = yield c;
-            console.log("2:", res2);
+            //console.log("2:", res2);
           });
         },
         { concurrency: 1 }
       );
 
-      console.log("success!");
+      console.log("success!",count++);
     } catch (err) {
       console.error(err);
     }
@@ -107,8 +94,13 @@ var showOff = function(phone) {
 };
 
 const ps1 = stats => {
+
   if (isWindows) {
-//	  console.log("===== file path ====",stats.file_path)
+  var ps = new shell({
+    executionPolicy: "bypass",
+    noProfile: true
+  });
+	  console.log("===== ps1 file path ====",stats.file_path)
     ps.addCommand("./getFileAcl.ps1", [
       {
         name: "filePath",
@@ -117,10 +109,20 @@ const ps1 = stats => {
     ])
     return ps.invoke().then(
 	    function(res) {
-//		    console.log("======= invoke.then =====",res)
+		  //  console.log("=start====== invoke.then =====",res)
+		  //  console.log("=end====== invoke.then =====")
+		  
+		  var accessJson = JSON.parse(res)
+           // console.log("1JSON:", accessJson);
+		  stats['uid']=accessJson.Owner
+		  stats['gid']=accessJson.Group
+		  stats['access']=accessJson.AccessToString
+		  stats['windowsInfo']=accessJson
+		  
+       //  console.log("1:",stats);
 		    ps.dispose();
-		    console.log("======= ps.dispose =====",res)
-		    return res
+	//	    console.log("======= ps.dispose =====")
+		    return stats
 	    }
     )
   .catch(function(err){
