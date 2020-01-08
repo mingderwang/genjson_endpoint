@@ -21,7 +21,7 @@ const s = new Sema(
 );
 
 if (process.argv.length <= 3) {
-  console.log("Usage: " + __filename + " path/toScan https://xxxx:9200");
+  console.log("Usage: node " + __filename + ' "c:\\Users\\ttt\\ming\\src" https://<ELK ip>:9200');
   process.exit(-1);
 }
 var root_path = process.argv[2];
@@ -80,7 +80,7 @@ async function* getFiles(dir) {
     return response.json();
   })
   .then(function(myJson) {
-    //console.log(myJson);
+    console.log(myJson);
   }).then(() => {
 	  console.log("------------------------ s.release")
               s.release();
