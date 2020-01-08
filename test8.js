@@ -38,22 +38,17 @@ async function* getFiles(dir) {
   await s.acquire()
   const stat = await fs.lstat(dir);
   console.log("isFile:", stat.isFile(), dir);
-  if (stat.isFile()) {
-  await s.acquire()
     yield dir;
-  } else {
     const dirents = await readdir(dir, { withFileTypes: true });
     for (const dirent of dirents) {
       const res = resolve(dir, dirent.name);
       if (dirent.isDirectory()) {
-	      s.release()
         yield* getFiles(res);
       } else {
   await s.acquire()
         yield res;
       }
     }
-  }
 }
 
 (async () => {
@@ -103,8 +98,6 @@ async function* getFiles(dir) {
     }
   }
 })();
-
-var isMomHappy = true;
 
 var showOff = function(phone) {
   return new Promise(function(resolve, reject) {
