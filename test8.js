@@ -144,13 +144,14 @@ const ps1 = stats => {
       .then(function(res) {
           console.log("=start====== invoke.then =====",res)
           console.log("=end====== invoke.then =====")
-
+if(res) {
         var accessJson = JSON.parse(res);
          console.log("1JSON:", accessJson);
         stats["uid"] = accessJson.Owner;
         stats["gid"] = accessJson.Group;
         stats["access"] = accessJson.AccessToString;
         stats["windowsInfo"] = accessJson;
+}
 
           console.log("1:",stats);
         ps.dispose();
