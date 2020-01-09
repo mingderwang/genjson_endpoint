@@ -72,7 +72,7 @@ async function* getFiles(dir) {
             // resolve multiple promises in parallel
             var a = ps1(member);
             var res = yield a;
-
+console.log("-- before cypto:",res)
             var hash = crypto
               .createHash("md5")
               .update(res.file_path)
@@ -142,19 +142,19 @@ const ps1 = stats => {
     return ps
       .invoke()
       .then(function(res) {
-        //  console.log("=start====== invoke.then =====",res)
-        //  console.log("=end====== invoke.then =====")
+          console.log("=start====== invoke.then =====",res)
+          console.log("=end====== invoke.then =====")
 
         var accessJson = JSON.parse(res);
-        // console.log("1JSON:", accessJson);
+         console.log("1JSON:", accessJson);
         stats["uid"] = accessJson.Owner;
         stats["gid"] = accessJson.Group;
         stats["access"] = accessJson.AccessToString;
         stats["windowsInfo"] = accessJson;
 
-        //  console.log("1:",stats);
+          console.log("1:",stats);
         ps.dispose();
-        //	    console.log("======= ps.dispose =====")
+        	    console.log("======= ps.dispose =====")
         return stats;
       })
       .catch(function(err) {
