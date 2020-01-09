@@ -1,5 +1,5 @@
 {
-  "name": "filescan",
+  "name": "test1",
   "version": "1.0.0",
   "description": "",
   "main": "test8.js",
@@ -8,7 +8,7 @@
   },
   "author": "Ming-der Wang",
   "license": "ISC",
-  "bin": "test8.js",
+  "bin": "test1.js",
   "dependencies": {
     "async-lock": "^1.2.2",
     "async-sema": "^3.1.0",
