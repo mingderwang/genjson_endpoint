@@ -13,7 +13,7 @@ var URL = "https://10.99.1.10:9200/win_index_id/_doc/";
 const username = "admin";
 const password = "admin";
 var count = 0;
-const isWindows = false;
+const isWindows = true;
 const s = new Sema(
   1 // Allow 1 concurrent async calls
 );

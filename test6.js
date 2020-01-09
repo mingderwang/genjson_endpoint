@@ -46,4 +46,4 @@ const read = async directory => {
   console.log(`Processed ${i} files in ${Date.now() - start} msecs`);
 };
 
-read(".");
+read("c:\\");

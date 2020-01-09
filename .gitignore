@@ -1,5 +1,7 @@
 genjson_endpoint
 genjson_endpoint.exe
+filescan
+filescan.exe
 # Logs
 logs
 *.log
