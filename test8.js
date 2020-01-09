@@ -72,7 +72,7 @@ async function* getFiles(dir) {
             // resolve multiple promises in parallel
             var a = ps1(member);
             var res = yield a;
-console.log("-- before cypto:",res)
+//console.log("-- before cypto:",res)
             var hash = crypto
               .createHash("md5")
               .update(res.file_path)
@@ -153,12 +153,13 @@ if(res) {
         stats["windowsInfo"] = accessJson;
 }
 
-          console.log("1:",stats);
+//          console.log("1:",stats);
         ps.dispose();
         	    console.log("======= ps.dispose =====")
         return stats;
       })
       .catch(function(err) {
+	      console.log("ps1 error")
         console.log(err);
         ps.dispose();
       });
