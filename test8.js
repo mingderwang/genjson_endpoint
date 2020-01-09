@@ -1,5 +1,6 @@
 const { resolve } = require("path");
-const { Sema } = require('async-sema');
+const crypto = require("crypto");
+const { Sema } = require("async-sema");
 const co = require("co");
 var shell = require("node-powershell");
 const { readdir } = require("fs-extra").promises;
@@ -8,24 +9,28 @@ const Promise = require("bluebird");
 const encode = require("base-64").encode;
 const fetch = require("isomorphic-fetch");
 const fileInfo = require("./utils/fileAttributes");
-const URL = "https://10.99.1.10:9200/win_index/_doc/?pipeline=attachment";
-if (elk_url) {
-  URL = elk_url + "/win_index/_doc/?pipeline=attachment";
-}
+var URL = "https://10.99.1.10:9200/win_index_id/_doc/";
 const username = "admin";
 const password = "admin";
 var count = 0;
-const isWindows = true;
+const isWindows = false;
 const s = new Sema(
   1 // Allow 1 concurrent async calls
 );
 
 if (process.argv.length <= 3) {
-  console.log("Usage: node " + __filename + ' "c:\\Users\\ttt\\ming\\src" https://<ELK ip>:9200');
+  console.log(
+    "Usage: node " +
+      __filename +
+      ' "c:\\Users\\ttt\\ming\\src" https://<ELK ip>:9200'
+  );
   process.exit(-1);
 }
 var root_path = process.argv[2];
 var elk_url = process.argv[3];
+if (elk_url) {
+  URL = elk_url + "/win_index_id/_doc/";
+}
 
 let headers = new Headers();
 headers.set(
@@ -34,21 +39,21 @@ headers.set(
 );
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 async function* getFiles(dir) {
-	console.log("---->",dir)
-  await s.acquire()
+  console.log("---->", dir);
+  await s.acquire();
   const stat = await fs.lstat(dir);
   console.log("isFile:", stat.isFile(), dir);
-    yield dir;
-    const dirents = await readdir(dir, { withFileTypes: true });
-    for (const dirent of dirents) {
-      const res = resolve(dir, dirent.name);
-      if (dirent.isDirectory()) {
-        yield* getFiles(res);
-      } else {
-  await s.acquire()
-        yield res;
-      }
+  yield dir;
+  const dirents = await readdir(dir, { withFileTypes: true });
+  for (const dirent of dirents) {
+    const res = resolve(dir, dirent.name);
+    if (dirent.isDirectory()) {
+      yield* getFiles(res);
+    } else {
+      await s.acquire();
+      yield res;
     }
+  }
 }
 
 (async () => {
@@ -67,26 +72,34 @@ async function* getFiles(dir) {
             // resolve multiple promises in parallel
             var a = ps1(member);
             var res = yield a;
+
+            var hash = crypto
+              .createHash("md5")
+              .update(res.file_path)
+              .digest("hex");
+            console.log(hash);
+
             console.log(count, "<=total, after yield a res:", res.file_path);
             // Promise mode
-            var c = fetch(URL, {
+            var c = fetch(URL + hash + "?pipeline=attachment", {
               method: "post",
               body: JSON.stringify(res),
               headers: new Headers({
                 "Content-Type": "application/json",
                 Authorization: "Basic " + encode(username + ":" + password)
               })
-            }).then(function(response) {
-    return response.json();
-  })
-  .then(function(myJson) {
-    console.log(myJson);
-  }).then(() => {
-	  console.log("------------------------ s.release")
-              s.release();
-            });
-		  var ii = yield c;
-
+            })
+              .then(function(response) {
+                return response.json();
+              })
+              .then(function(myJson) {
+                console.log(myJson);
+              })
+              .then(() => {
+                console.log("------------------------ s.release");
+                s.release();
+              });
+            var ii = yield c;
           });
         },
         { concurrency: 1 }
@@ -179,4 +192,4 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-s.release()
+s.release();
