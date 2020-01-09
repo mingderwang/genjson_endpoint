@@ -9,11 +9,11 @@ const Promise = require("bluebird");
 const encode = require("base-64").encode;
 const fetch = require("isomorphic-fetch");
 const fileInfo = require("./utils/fileAttributes");
-var URL = "https://10.99.1.10:9200/win_index_id/_doc/";
+var URL = "https://10.99.1.10:9200/";
 const username = "admin";
 const password = "admin";
 var count = 0;
-const isWindows = true;
+const isWindows = false;
 const s = new Sema(
   1 // Allow 1 concurrent async calls
 );
@@ -29,7 +29,7 @@ if (process.argv.length <= 3) {
 var root_path = process.argv[2];
 var elk_url = process.argv[3];
 if (elk_url) {
-  URL = elk_url + "/win_index_id/_doc/";
+  URL = elk_url + "/";
 }
 
 let headers = new Headers();
@@ -72,18 +72,30 @@ async function* getFiles(dir) {
             // resolve multiple promises in parallel
             var a = ps1(member);
             var res = yield a;
+            var res2 = {}
 
-            var hash = crypto
-              .createHash("md5")
-              .update(res.file_path)
-              .digest("hex");
-            console.log(hash);
+            if (isWindows) {
+              var hash = crypto
+                .createHash("md5")
+                .update(res.file_path)
+                .digest("hex");
+              console.log(hash);
+var data = JSON.stringify(res)
+              console.log(count, "<=total, after yield a res:", res.file_path);
+            res = `{"index": { "_index": "testindex", "_type": "_doc", "_id": "`+hash+`", "pipeline": "attachment" } }` + "\n" +
+             data + "\n"
+             console.log(res)
 
-            console.log(count, "<=total, after yield a res:", res.file_path);
-            // Promise mode
-            var c = fetch(URL + hash + "?pipeline=attachment", {
+            } else {
+              var hash = "asdfasdfasdf"
+            res = `{"index": { "_index": "testindex", "_type": "_doc", "_id": "`+hash+`", "pipeline": "attachment" } }` + "\n" +
+             `{ "data": "Y291Y291", "name": "jean", "age": 22 }` + "\n"
+             console.log(res)
+          }
+
+            var c = fetch(URL + "/_bulk", {
               method: "post",
-              body: JSON.stringify(res),
+              body: res,
               headers: new Headers({
                 "Content-Type": "application/json",
                 Authorization: "Basic " + encode(username + ":" + password)
