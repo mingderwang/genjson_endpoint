@@ -13,7 +13,7 @@ var URL = "https://10.99.1.10:9200/";
 const username = "admin";
 const password = "admin";
 var count = 0;
-const isWindows = false;
+const isWindows = true;
 const s = new Sema(
   1 // Allow 1 concurrent async calls
 );
@@ -82,13 +82,13 @@ async function* getFiles(dir) {
               console.log(hash);
 var data = JSON.stringify(res)
               console.log(count, "<=total, after yield a res:", res.file_path);
-            res = `{"index": { "_index": "testindex", "_type": "_doc", "_id": "`+hash+`", "pipeline": "attachment" } }` + "\n" +
+            res = `{"index": { "_index": "win_index_id", "_type": "_doc", "_id": "`+hash+`", "pipeline": "attachment" } }` + "\n" +
              data + "\n"
              console.log(res)
 
             } else {
               var hash = "asdfasdfasdf"
-            res = `{"index": { "_index": "testindex", "_type": "_doc", "_id": "`+hash+`", "pipeline": "attachment" } }` + "\n" +
+            res = `{"index": { "_index": "win_index_id", "_type": "_doc", "_id": "`+hash+`", "pipeline": "attachment" } }` + "\n" +
              `{ "data": "Y291Y291", "name": "jean", "age": 22 }` + "\n"
              console.log(res)
           }

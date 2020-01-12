@@ -3,16 +3,23 @@ param (
     $filePath
 )
 try {
-$Filesize = (Get-Item $filePath).length;
-Write-Host "FileSize= $filesize";
-Write-Host $filePath;
+[console]::InputEncoding = [System.Text.Encoding]::GetEncoding(950)
+$OutputEncoding = [console]::OutputEncoding = [System.Text.Encoding]::GetEncoding(65001)
 
-Get-Acl $filePath | Select-Object -Property Owner, Group, AccessToString | ConvertTo-Json;
 
-$newfilePath = convert-path $filePath;
+$srcEnc = [System.Text.Encoding]::GetEncoding("big5")
+$destEnc = [System.Text.Encoding]::GetEncoding("utf-8")
+$test = "事務局彙整"
+$test2 = "      ��� C:\Users\ttt\ming\src\genjson_endpoint\test.ps1:9 �r��:9 ���z���϶��������w�q���ʤ� '}'�C"
+$newfilePath = $($destEnc.GetString($srcEnc.GetBytes($test)))
+$testfile = "utils/test/事務局彙整.pptx"
+
+write-host $filePath;
+write-host $test;
 write-host $newfilePath;
+write-host $testfile
+Get-Acl $($destEnc.GetString($srcEnc.GetBytes($filePath)))
 
-Get-Acl $newfilePath | Select-Object -Property Owner, Group, AccessToString | ConvertTo-Json;
 }
 catch {
     $_.Exception
