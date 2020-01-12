@@ -1,3 +1,4 @@
+const iconv = require('iconv-lite');
 const { resolve } = require("path");
 const crypto = require("crypto");
 const { Sema } = require("async-sema");
@@ -145,10 +146,14 @@ const ps1 = stats => {
       noProfile: true
     });
     console.log("===== ps1 file path ====", stats.file_path);
+let	  buf = iconv.encode(stats.file_path, 'win1251');
+	  let utf8_file_path = iconv.decode(Buffer.from(buf), 'utf8');
+
+
     ps.addCommand("./getFileAcl.ps1", [
       {
         name: "filePath",
-        value: stats.file_path
+        value: utf8_file_path
       }
     ]);
     return ps
