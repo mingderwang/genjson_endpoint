@@ -85,7 +85,7 @@ var data = JSON.stringify(res)
               console.log(count, "<=total, after yield a res:", res.file_path);
             res = `{"index": { "_index": "win_index_id", "_type": "_doc", "_id": "`+hash+`", "pipeline": "attachment" } }` + "\n" +
              data + "\n"
-             console.log(res)
+             //console.log(res)
 
             } else {
               var hash = "asdfasdfasdf"
