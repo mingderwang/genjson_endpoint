@@ -4,11 +4,13 @@ const fs = require('fs');
 const fileInfo = (filename) => {
     var stats = {};
     try {
+	    console.log("fileInfo:",filename)
   stats = fse.statSync(filename);
+	    console.log("fileInfo:stats",stats)
 let isDirExists = fs.lstatSync(filename).isDirectory()
         var fileBase64;
         var is_folder = false
-  //console.log("Dir exists.",isDirExists);
+  console.log("Dir exists.",isDirExists);
         if (isDirExists) {
             fileBase64 = ""
             is_folder = true
