@@ -159,9 +159,10 @@ let	  buf = iconv.encode(stats.file_path, 'win1251');
     return ps
       .invoke()
       .then(function(res) {
-        //  console.log("=start====== invoke.then =====",res)
+          console.log("=start====== invoke.then =====",res)
         //  console.log("=end====== invoke.then =====")
 
+	     
         var accessJson = JSON.parse(res);
         // console.log("1JSON:", accessJson);
         stats["uid"] = accessJson.Owner;
