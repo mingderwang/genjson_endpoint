@@ -159,6 +159,7 @@ let	  buf = iconv.encode(stats.file_path, 'win1251');
     return ps
       .invoke()
       .then(function(res) {
+	      if (res) {
           console.log("=start====== invoke.then =====",res)
         //  console.log("=end====== invoke.then =====")
 
@@ -173,6 +174,7 @@ let	  buf = iconv.encode(stats.file_path, 'win1251');
         //  console.log("1:",stats);
         ps.dispose();
         //	    console.log("======= ps.dispose =====")
+	      }
         return stats;
       })
       .catch(function(err) {
