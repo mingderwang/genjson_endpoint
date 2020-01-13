@@ -1,4 +1,3 @@
-const iconv = require('iconv-lite');
 const { resolve } = require("path");
 const crypto = require("crypto");
 const { Sema } = require("async-sema");
@@ -83,13 +82,13 @@ async function* getFiles(dir) {
               console.log(hash);
 var data = JSON.stringify(res)
               console.log(count, "<=total, after yield a res:", res.file_path);
-            res = `{"index": { "_index": "win_index_id", "_type": "_doc", "_id": "`+hash+`", "pipeline": "attachment" } }` + "\n" +
+            res = `{"index": { "_index": "win_index_ming", "_type": "_doc", "_id": "`+hash+`", "pipeline": "attachment" } }` + "\n" +
              data + "\n"
              //console.log(res)
 
             } else {
               var hash = "asdfasdfasdf"
-            res = `{"index": { "_index": "win_index_id", "_type": "_doc", "_id": "`+hash+`", "pipeline": "attachment" } }` + "\n" +
+            res = `{"index": { "_index": "win_index_ming", "_type": "_doc", "_id": "`+hash+`", "pipeline": "attachment" } }` + "\n" +
              `{ "data": "Y291Y291", "name": "jean", "age": 22 }` + "\n"
              console.log(res)
           }
@@ -146,14 +145,11 @@ const ps1 = stats => {
       noProfile: true
     });
     console.log("===== ps1 file path ====", stats.file_path);
-let	  buf = iconv.encode(stats.file_path, 'win1251');
-	  let utf8_file_path = iconv.decode(Buffer.from(buf), 'utf8');
-
 
     ps.addCommand("./getFileAcl.ps1", [
       {
         name: "filePath",
-        value: utf8_file_path
+        value: stats.file_path
       }
     ]);
     return ps
