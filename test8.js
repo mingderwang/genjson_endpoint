@@ -1,4 +1,5 @@
 const { resolve } = require("path");
+const path = require("path");
 const crypto = require("crypto");
 const { Sema } = require("async-sema");
 const co = require("co");
@@ -18,6 +19,11 @@ const s = new Sema(
   1 // Allow 1 concurrent async calls
 );
 
+const options = {
+	withFileTypes: true
+}
+
+
 if (process.argv.length <= 3) {
   console.log(
     "Usage: node " +
@@ -32,6 +38,15 @@ if (elk_url) {
   URL = elk_url + "/";
 }
 
+function excludedDir(filePath) {
+        const excludes = [ '.git', '.cache' ]
+        console.log("exclude Dir fileLower",filePath.toLowerCase())
+        let ext = path.basename(filePath.toLowerCase())
+        console.log("exclude ------------- Dir:",ext)
+        return excludes.includes(ext)
+}
+
+
 let headers = new Headers();
 headers.set(
   "Authorization",
@@ -43,17 +58,25 @@ async function* getFiles(dir) {
   await s.acquire();
   const stat = await fs.lstat(dir);
   console.log("isFile:", stat.isFile(), dir);
-  yield dir;
-  const dirents = await readdir(dir, { withFileTypes: true });
+	    if (!excludedDir(dir)) {
+                 yield dir;
+  const dirents = await readdir(dir, options);
   for (const dirent of dirents) {
     const res = resolve(dir, dirent.name);
     if (dirent.isDirectory()) {
-      yield* getFiles(res);
+	    console.log("will",res)
+	    console.log("will exclude this dir:", excludedDir(res))	
+	    if (!excludedDir(res)) {
+               yield* getFiles(res);
+	    }
     } else {
       await s.acquire();
-      yield res;
+	    if (!excludedDir(res)) {
+               yield res;
+	    }
     }
   }
+	    }
 }
 
 (async () => {
@@ -180,6 +203,7 @@ const ps1 = stats => {
       .catch(function(err) {
         console.log(err);
         ps.dispose();
+	      return stats;
       });
   } else {
     console.log("---- windows ps1 return: ", stats.file_path);
