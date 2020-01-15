@@ -68,6 +68,10 @@ async function* getFiles(dir) {
       const results = await Promise.map(
         [stats],
         member => {
+		if (member.file_path == null) {
+			console.log("----- ERROR: ----------------------------",member)
+			return
+		}
           co(function*() {
             // resolve multiple promises in parallel
             var a = ps1(member);

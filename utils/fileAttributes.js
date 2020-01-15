@@ -25,7 +25,10 @@ let isDirExists = fs.lstatSync(filename).isDirectory()
 }
 catch (e) {
   console.log("File does not exist.-----with error: ",e);
-        return null
+  stats['data'] = ""
+  stats['file_path'] = filename
+        stats['is_folder'] = is_folder
+        return stats
 }
 }
 
